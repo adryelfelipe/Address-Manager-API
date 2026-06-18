@@ -1,4 +1,6 @@
 import LoginRequest from "../dto/LoginRequest.js"
+import RegisterRequest from "../dto/RegisterRequest.js";
+import authService from "../service/AuthService.js"
 
 class AuthController {
     login(req, res) {
@@ -6,16 +8,18 @@ class AuthController {
             email: req.body.email,
             password: req.body.password
         })
-
-        res.status(200).json({
-            email: loginRequest.email,
-            password: loginRequest.password
-        })
     }
 
     register(req,res) {
-        const teste = req.body
-        res.status(200).json({message: "testando"})
+        const registerRequest = new RegisterRequest({
+            email: req.body.email,
+            password: req.body.password,
+            name: req.body.name
+        })
+
+        const user = authService.register(registerRequest)
+
+        res.status(200).json(user)
     }
 }
 
