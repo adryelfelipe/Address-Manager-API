@@ -1,11 +1,13 @@
 import express from "express"
-import router from "./src/web/routes/auth/authRoutes.js"
+import authRouter from "./src/web/routes/auth/authRoutes.js"
+import addressRouter from "./src/web/routes/address/addressRouter.js"
+import sharedRouter from "./src/web/routes/address/sharedRouter.js"
 
 const app = express();
 
 app.use(express.json())
 
-app.use("/auth",router)
+app.use("/auth",authRouter)
 app.use("/addresses", addressRouter);
 app.use("/shared", sharedRouter);
 
