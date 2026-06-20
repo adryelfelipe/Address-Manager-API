@@ -2,6 +2,7 @@ import express from "express"
 import authRouter from "./src/web/routes/auth/authRoutes.js"
 import addressRouter from "./src/web/routes/address/addressRouter.js"
 import sharedRouter from "./src/web/routes/address/sharedRouter.js"
+import 'dotenv/config'; 
 
 const app = express();
 

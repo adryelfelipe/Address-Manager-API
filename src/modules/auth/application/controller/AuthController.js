@@ -9,9 +9,16 @@ class AuthController {
             password: req.body.password
         })
 
-        const token = await authService.login(loginRequest);
+        try {
+            const token = await authService.login(loginRequest);
+            res.status(200).json({ token });
+        } catch (error) {
+            if (error.name === 'InvalidCredentialsException') {
+                return res.status(401).json({ message: error.message });
+            }
 
-        res.status(200).json(token);
+            res.status(500).json({ message: 'Internal server error' });
+        }
     }
 
     async register(req, res) {  
