@@ -1,9 +1,9 @@
-import AddressRepository from '../../domain/address/AddressRepository.js';
-import prisma from '../prismaClient.js';
+import AddressRepository from '../../domain/repository/AddressRepository.js';
+import prismaClient from '../../../../shared/infrastructure/client/PrismaClientFactory.js';
 
 class PrismaAddressRepository extends AddressRepository {
   async create(address) {
-    const created = await prisma.addresses.create({
+    const created = await prismaClient.addresses.create({
       data: {
         street: address.street,
         number: address.number,
@@ -20,7 +20,7 @@ class PrismaAddressRepository extends AddressRepository {
   }
 
   async findAllByUserId(userId, keyword) {
-    const found = await prisma.addresses.findMany({
+    const found = await prismaClient.addresses.findMany({
       where: {
         user_id: userId,
         ...(keyword && {
@@ -37,7 +37,7 @@ class PrismaAddressRepository extends AddressRepository {
   }
 
   async findById(id) {
-    const found = await prisma.addresses.findUnique({
+    const found = await prismaClient.addresses.findUnique({
       where: { id },
     });
 
@@ -45,7 +45,7 @@ class PrismaAddressRepository extends AddressRepository {
   }
 
   async update(id, address) {
-    const updated = await prisma.addresses.update({
+    const updated = await prismaClient.addresses.update({
       where: { id },
       data: {
         street: address.street,
@@ -62,10 +62,10 @@ class PrismaAddressRepository extends AddressRepository {
   }
 
   async delete(id) {
-    await prisma.addresses.delete({
+    await prismaClient.addresses.delete({
       where: { id },
     });
   }
 }
 
-export default PrismaAddressRepository;
+export default new PrismaAddressRepository();

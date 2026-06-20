@@ -1,11 +1,14 @@
 import addressMapper from '../mapper/AddressMapper.js';
+import prismaAddressRepository from "../../infrastructure/repository/PrismaAddressRepository.js"
+
  
 class AddressService {
   create(createAddressRequest, userId) {
     const address = addressMapper.toAddress(createAddressRequest, userId);
 
- 
-    return addressMapper.toResponse(address);
+    const id = prismaAddressRepository.create(address)
+
+    return id;
   }
  
   findAll(userId, keyword) {
