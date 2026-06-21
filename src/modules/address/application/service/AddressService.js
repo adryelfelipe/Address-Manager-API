@@ -65,10 +65,16 @@ class AddressService {
     return { url };
   }
  
-  async getShared(token) {
-    // falta: validar/decodificar o token JWT (jwt.verify)
-    // falta: se expirado ou inválido, lançar erro
-    // falta repositório: buscar endereço pelo id contido no token
+ async getShared(token) {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+ 
+    const address = await prismaAddressRepository.findById(decoded.addressId);
+ 
+    if (!address) {
+      throw new AddressNotFoundException();
+    }
+ 
+    return addressMapper.toResponse(address);
   }
 }
  
