@@ -1,6 +1,7 @@
 import addressMapper from '../mapper/AddressMapper.js';
 import prismaAddressRepository from "../../infrastructure/repository/PrismaAddressRepository.js"
 import AddressNotFoundException from "../exceptions/AddressNotFoundException.js"
+import jwt from 'jsonwebtoken';
 
  
 class AddressService {
@@ -47,9 +48,21 @@ class AddressService {
   }
  
   async share(id, userId, expiresIn) {
-    // falta repositório: buscar endereço e validar se pertence ao userId
-    // falta: gerar token JWT com o id do endereço e validade (expiresIn)
-    // falta: montar e retornar a URL com o token gerado
+    const address = await prismaAddressRepository.findById(Number(id));
+ 
+    if (!address || address.user_id !== userId) {
+      throw new AddressNotFoundException();
+    }
+ 
+    const token = jwt.sign(
+      { addressId: address.id },
+      process.env.JWT_SECRET,
+      { expiresIn: expiresIn || '1h' }
+    );
+ 
+    const url = `${process.env.BASE_URL}/shared/${token}`;
+ 
+    return { url };
   }
  
   async getShared(token) {
