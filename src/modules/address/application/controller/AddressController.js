@@ -1,75 +1,127 @@
 import CreateAddressRequest from "../dto/CreateAddressRequest.js";
 import UpdateAddressRequest from "../dto/UpdateAddressRequest.js";
 import addressService from "../service/AddressService.js";
+import { ZodError } from "zod";
+import {
+  createAddressSchema,
+  updateAddressSchema,
+  addressIdParamSchema,
+  sharedTokenParamSchema,
+  findAllAddressQuerySchema,
+  shareAddressSchema,
+} from "../schema/addressSchema.js"
 
 class AddressController {
   async create(req, res) {
-    const createAddressRequest = new CreateAddressRequest({
-      street: req.body.street,
-      number: req.body.number,
-      complement: req.body.complement,
-      neighborhood: req.body.neighborhood,
-      city: req.body.city,
-      state: req.body.state,
-      zipCode: req.body.zipCode,
-    });
-
     try {
+      const data = createAddressSchema.parse(req.body);
+      const createAddressRequest = new CreateAddressRequest(data);
+
       const id = await addressService.create(createAddressRequest, req.userId);
 
       res.status(201).location(`/addresses/${id}`).json({ id });
     } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ errors: error.issues });
+      }
       res.status(500).send();
     }
   }
 
   async findAll(req, res) {
-      const addresses = await addressService.findAll(req.userId, req.query.keyword);
+    try {
+      const { keyword } = findAllAddressQuerySchema.parse(req.query);
+
+      const addresses = await addressService.findAll(req.userId, keyword);
       res.status(200).json(addresses);
-   
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ errors: error.issues });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
   }
 
   async update(req, res) {
-    const updateAddressRequest = new UpdateAddressRequest({
-      street: req.body.street,
-      number: req.body.number,
-      complement: req.body.complement,
-      neighborhood: req.body.neighborhood,
-      city: req.body.city,
-      state: req.body.state,
-      zipCode: req.body.zipCode,
-    });
+    try {
+      const { id } = addressIdParamSchema.parse(req.params);
+      const data = updateAddressSchema.parse(req.body);
+      const updateAddressRequest = new UpdateAddressRequest(data);
 
-    const address = await addressService.update(req.params.id, updateAddressRequest, req.userId);
+      const address = await addressService.update(id, updateAddressRequest, req.userId);
 
-    res.status(200).json(address);
+      res.status(200).json(address);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ errors: error.issues });
+      }
+      if (error.name === "AddressNotFoundException") {
+        return res.status(404).json({ message: error.message });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
   }
 
   async delete(req, res) {
     try {
-      await addressService.delete(req.params.id, req.userId);
- 
+      const { id } = addressIdParamSchema.parse(req.params);
+
+      await addressService.delete(id, req.userId);
+
       res.status(204).send();
     } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ errors: error.issues });
+      }
       if (error.name === "AddressNotFoundException") {
-        res.status(404).json({ message: error.message });
-      } 
-
-      console.log(error.message)
+        return res.status(404).json({ message: error.message });
+      }
+      console.log(error.message);
       res.status(500).json({ message: "Internal server error" });
     }
-    
   }
-  async share(req, res) {
-    const sharedUrl = await addressService.share(req.params.id, req.userId, req.body.expiresIn);
 
-    res.status(200).json(sharedUrl);
+  async share(req, res) {
+    try {
+      const { id } = addressIdParamSchema.parse(req.params);
+      const { expiresIn } = shareAddressSchema.parse(req.body);
+
+      const sharedUrl = await addressService.share(id, req.userId, expiresIn);
+
+      res.status(200).json(sharedUrl);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ errors: error.issues });
+      }
+      if (error.name === "AddressNotFoundException") {
+        return res.status(404).json({ message: error.message });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
   }
 
   async getShared(req, res) {
-    const address = await addressService.getShared(req.params.token);
+    try {
+      const { token } = sharedTokenParamSchema.parse(req.params);
 
-    res.status(200).json(address);
+      const address = await addressService.getShared(token);
+
+      res.status(200).json(address);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ errors: error.issues });
+      }
+      if (error.name === "TokenExpiredError") {
+        return res.status(401).json({ message: "Shared link expired" });
+      }
+      if (error.name === "JsonWebTokenError") {
+        return res.status(401).json({ message: "Invalid shared link" });
+      }
+      if (error.name === "AddressNotFoundException") {
+        return res.status(404).json({ message: error.message });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
   }
 }
 
