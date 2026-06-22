@@ -176,11 +176,7 @@ npm install
 
 ### 3. Configurar as variáveis de ambiente
 
-```bash
-cp .env.example .env
-```
-
-Edite o `.env` com seus valores:
+Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
 
 ```dotenv
 DATABASE_URL="postgres://usuario:senha@host:porta/database?sslmode=require"
