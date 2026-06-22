@@ -8,23 +8,27 @@ class GlobalExceptionHandler {
     }
 
     if (error instanceof SyntaxError && error.status === 400 && "body" in error) {
-
       return this.handleInvalidJson(req, res);
     }
 
     if (error.name === "AddressNotFoundException") {
-
       return this.handleNotFound(error, req, res);
     }
 
     if (error.name === "TokenExpiredError") {
-
       return this.handleTokenExpired(req, res);
     }
 
     if (error.name === "JsonWebTokenError") {
-
       return this.handleInvalidToken(req, res);
+    }
+
+    if (error.name === "InvalidCredentialsException") {
+      return this.handleInvalidCredentials(error, req, res);
+    }
+
+    if (error.name === "EmailAlreadyUsedException") {
+      return this.handleEmailAlreadyUsed(error, req, res);
     }
 
     return this.handleUnexpectedError(error, req, res);
@@ -88,6 +92,30 @@ class GlobalExceptionHandler {
     );
 
     return res.status(401).json(problem);
+  }
+
+  handleInvalidCredentials(error, req, res) {
+    const problem = new ProblemDetails(
+      "https://api.example.com/errors/invalid-credentials",
+      "Invalid Credentials",
+      401,
+      error.message,
+      req.path
+    );
+
+    return res.status(401).json(problem);
+  }
+
+  handleEmailAlreadyUsed(error, req, res) {
+    const problem = new ProblemDetails(
+      "https://api.example.com/errors/email-already-used",
+      "Email Already Used",
+      409,
+      error.message,
+      req.path
+    );
+
+    return res.status(409).json(problem);
   }
 
   handleUnexpectedError(error, req, res) {
