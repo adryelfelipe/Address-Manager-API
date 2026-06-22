@@ -4,6 +4,6 @@ import authController from "../../../modules/auth/application/controller/AuthCon
 const router = Router();
 
 router.post("/login", authController.login)
-router.post("/register", authController.register)
+router.post("/user", authController.register)
 
 export default router;

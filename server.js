@@ -11,7 +11,7 @@ const app = express();
 
 app.use(express.json())
 
-app.use("/auth",authRouter)
+app.use("/", authRouter)
 app.use("/shared", sharedRouter);
 app.use("/addresses", authMiddleware.handle, addressRouter);
 app.use((error, req, res, next) => globalExceptionHandler.handle(error, req, res, next));
