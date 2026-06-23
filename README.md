@@ -87,7 +87,61 @@ O destinatário do link não precisa ter conta nem fazer login para acessar o en
 
 ## 🏗️ Arquitetura
 
-O projeto segue uma abordagem em camadas, separada por **módulo de domínio**:
+O projeto segue uma abordagem orientada ao domínio, com separação clara entre **Domain**, **Application** e **Infrastructure**, organizada por módulos de funcionalidade.
+
+Essa estrutura foi adotada de forma propositalmente mais robusta do que o necessário para o escopo do desafio.
+
+Embora a aplicação pudesse ser implementada de forma mais simples (ex: controllers e services diretamente), a escolha por essa organização teve como objetivo demonstrar domínio de arquitetura de software e a capacidade de estruturar sistemas pensando em escalabilidade.
+
+O foco não foi adicionar complexidade desnecessária, mas sim evidenciar como a aplicação evoluiria em um cenário real de maior porte, onde o desacoplamento entre regras de negócio, frameworks e infraestrutura se torna essencial.
+
+---
+
+### 🧩 Domain
+
+Contém os conceitos centrais do negócio, como **entidades** e **contratos de repositório**.
+
+- Não possui dependência de frameworks (Express, Prisma, etc.)
+- Representa o núcleo das regras de negócio
+- Mantém independência de decisões técnicas
+- Deve ser estável ao longo da evolução do sistema
+
+---
+
+### ⚙️ Application
+
+Responsável por orquestrar os casos de uso da aplicação.
+
+- Controllers
+- Services (casos de uso)
+- DTOs
+- Validações e schemas
+- Mappers
+
+Essa camada coordena o fluxo da aplicação e aplica as regras de negócio utilizando as abstrações definidas no domínio.
+
+---
+
+### 🔌 Infrastructure
+
+Contém as implementações concretas e integrações externas.
+
+- Prisma (ORM)
+- PostgreSQL
+- JWT (autenticação)
+- Middlewares
+- Repositórios concretos
+- Integração com Express / HTTP
+
+É responsável por conectar a aplicação ao mundo externo e implementar as dependências definidas pelas camadas superiores.
+
+---
+
+### 📌 Observação
+
+Essa separação garante baixo acoplamento entre as camadas, facilitando manutenção, testes e evolução da aplicação sem impacto direto nas regras de negócio.
+
+---
 
 ```
 src/
@@ -101,16 +155,6 @@ src/
         ├── errors/    → Tratamento global de erros (ProblemDetails)
         └── log/       → Registro de logs de alterações (PUT/DELETE)
 ```
-
-Cada módulo é dividido em:
-
-| Camada | Responsabilidade |
-|---|---|
-| **domain** | Modelos e contratos de repositório (independem de framework) |
-| **application** | Controllers, services, DTOs, schemas de validação e mappers |
-| **infrastructure** | Implementações concretas (Prisma, middlewares, repositórios) |
-
-O domínio (models e contratos de repositório) não depende de Express ou do Prisma diretamente — essas dependências ficam isoladas na camada de infraestrutura.
 
 ---
 
@@ -355,9 +399,3 @@ Os erros seguem o formato **[RFC 7807 (Problem Details)](https://www.rfc-editor.
   "errors": [ "..." ]
 }
 ```
-
----
-
-## 💡 Conclusão
-
-Além do CRUD básico, o projeto cobre autenticação, isolamento de dados por usuário, log de auditoria e compartilhamento temporário — atendendo aos requisitos propostos no teste técnico.
